@@ -1,8 +1,10 @@
 import pandas as pd
 import matplotlib as plt
+from pandasql import sqldf
 import sys
 import shutil
 from datetime import date
+import json
 
 if len(sys.argv) < 3:
     raise Exception("Not enough args to start.")
@@ -35,4 +37,26 @@ def createErrorDf():
     return error_df
 
 
+def getBasicErrorsData():
+    error_df = createErrorDf();
+    errors_by_date = sqldf("SELECT date, count()  FROM error_df GROUP BY date")
+    log_level_groupped = sqldf("SELECT log_level, count() FROM error_df GROUP BY log_level")
+    open_file_errors = len(sqldf("SELECT * FROM error_df WHERE message like '%open()%'").index)
+    ssl_handshake_errors = len(sqldf("SELECT * FROM error_df WHERE message like '%SSL_do_handshake() failed'").index)
 
+def getAccessDataDf():
+    data = []
+    # Open the JSON file and read it line by line
+    with open(log_directory + "/web_ui_access.log", 'r') as file:
+        for line in file:
+            # Parse each line as a JSON object and append it to the list
+            json_data = json.loads(line)
+            data.append(json_data)
+    return pd.DataFrame(data);
+
+
+access_df = getAccessDataDf();
+requests_total = len(access_df.index);
+
+requests_code_count = sqldf("SELECT status, count() c FROM access_df GROUP BY status ORDER BY c DESC")
+print(requests_code_count)
