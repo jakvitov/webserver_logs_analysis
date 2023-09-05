@@ -1,3 +1,5 @@
+import itertools
+
 import pandas as pd
 import matplotlib as plt
 from pandasql import sqldf
@@ -5,6 +7,7 @@ import sys
 import shutil
 from datetime import date
 import json
+import requests
 
 if len(sys.argv) < 3:
     raise Exception("Not enough args to start.")
@@ -52,11 +55,30 @@ def getAccessDataDf():
             # Parse each line as a JSON object and append it to the list
             json_data = json.loads(line)
             data.append(json_data)
-    return pd.DataFrame(data);
+    return pd.DataFrame(data)
+
+def translateIps(ipList):
+    result = [];
+    # We split the ipList to groups of 99 -> the external service limit
+    for i in range(0, len(ipList), 99):
+        api_url = "http://ip-api.com/batch?fields=city,country,countryCode,query,asname,proxy"
+        body = ipList[i : i + 99]
+        response = requests.post(api_url, json=body)
+        result += (response.json())
+    return result
 
 
-access_df = getAccessDataDf();
-requests_total = len(access_df.index);
+access_df = getAccessDataDf()
+requests_total = len(access_df.index)
 
 requests_code_count = sqldf("SELECT status, count() c FROM access_df GROUP BY status ORDER BY c DESC")
-print(requests_code_count)
+often_request_ip = sqldf("SELECT address, count() c FROM access_df GROUP BY address HAVING c >= 10 ORDER BY c DESC")
+
+non_ok_req_avg_per_ip = sqldf("SELECT address, count() as count FROM access_df GROUP BY address HAVING status IS NOT 200")
+max_non_ok_per_ip = non_ok_req_avg_per_ip["count"].max()
+non_ok_per_ip_mean = non_ok_req_avg_per_ip["count"].mean()
+var_coef_non_ok_per_ip = (non_ok_req_avg_per_ip["count"].std()/non_ok_per_ip_mean) * 100;
+
+max_non_ok_ips = sqldf("SELECT address FROM non_ok_req_avg_per_ip WHERE count=" + str(1))
+
+print(translateIps(list(max_non_ok_ips["address"])))
