@@ -1,0 +1,32 @@
+<h1>Jakvitov web summary $from_date - $to_date</h1>
+<h2>Requests</h2>
+<ul>
+    <li>Requests: $requests_count</li>                  --DONE
+    <li>Errors: $errors_count</li>                      --DONE
+    <li>Errors per request: $errors_per_req</li>           --DONE
+</ul>
+<h2>Error anaylsis:</h2>
+<ul>
+    <li>Errors in error log: $error_log_errors</li>         --DONE
+    <li>Open file errors: $open_file_erros</li>             --DONE
+    <li>SSL handshake errors: $handshake_errors</li>        --DONE
+</ul>
+<h2>Failed requests analysis:</h2>
+<ul>
+    <li>Average failed req. per IP: $avg_failed</li>        --DONE
+    <li>Failed requests by date: $failed_per_date</li>      --DONE
+    <li>Max failed requests per IP: $max_failed_per_ip</li>  --DONE
+</ul>
+<h2>Request countries analysis:</h2>
+<ul>
+    <li>Total countries access: $total_diff_countries</li>
+    <li>Errors by countries: $errors_by_countries</li>
+    <li>Proxy total count and relative: $proxy_total, $proxy_relative</li>
+</ul>
+<h2>Response time analysis: </h2>
+<ul>
+    <li>Average response time: $average_response_time</li>
+    <li>Highest response time: $highest_response_time, IP from: $ip_highest_resp_time_origin</li>
+</ul>
+<h2>Average load graph: </h2>
+$average_load_graph
