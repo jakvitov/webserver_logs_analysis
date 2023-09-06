@@ -18,22 +18,22 @@ def getAccessDataDf(log_directory):
             data.append(json_data)
     return pd.DataFrame(data)
 
-def createAccessCountriesPlot(translated_ips):
+def createAccessCountriesPlot(translated_ips, title):
     country_counts = translated_ips['country'].value_counts()
     # Create a bar plot
     country_counts.plot(kind='bar')
-    plt.title('Visits per country')
+    plt.title(title)
     plt.xlabel('Country')
     plt.ylabel('Count of visits')
     plt.xticks(rotation=90)
     plt.tight_layout()
     return plt
 
-def fillInfoFromAccessLog(error_info):
-    access_df = getAccessDataDf()
+def fillInfoFromAccessLog(error_info, log_directory):
+    access_df = getAccessDataDf(log_directory)
 
     requests_total = len(access_df.index)
-    non_ok_requests = len((sqldf("SELECT * FROM access_df GROUP BY WHERE status IS NOT 200")).index)
+    non_ok_requests = len((sqldf("SELECT * FROM access_df WHERE status IS NOT 200")).index)
     non_ok_req_avg_per_ip = sqldf(
         "SELECT address, count() as count FROM access_df GROUP BY address HAVING status IS NOT 200")
     non_ok_per_ip_mean = non_ok_req_avg_per_ip["count"].mean()
@@ -53,7 +53,12 @@ def fillInfoFromAccessLog(error_info):
     all_ips = sqldf("SELECT address FROM access_df GROUP BY address")
     ips_translated = translateIps(list(all_ips["address"]))
     proxy_count = len(sqldf("SELECT * FROM ips_translated where proxy IS True").index)
-    access_by_country_graph = createAccessCountriesPlot(ips_translated)
+    error_ips_countries = ips_translated[ips_translated["query"].isin(list(non_ok_req_avg_per_ip["address"]))]
+
+    access_by_country_graph = createAccessCountriesPlot(ips_translated, "Request to website server per country")
+    access_by_country_graph.savefig("access_by_country.png")
+    errors_by_country_graph = createAccessCountriesPlot(error_ips_countries, "Error requests to website server per country")
+    errors_by_country_graph.savefig("errors_by_country")
 
     error_info["requests_count"] = str(requests_total)
     error_info["errors_count"] = str(non_ok_requests)
@@ -64,4 +69,14 @@ def fillInfoFromAccessLog(error_info):
     error_info["max_failed_per_ip"] = max_no_ok_ips_translated.to_html()
     error_info["proxy_total"] = str(proxy_count)
     error_info["proxy_relative"] = str(proxy_count/requests_total)
+
+    error_info["from_date"] = access_df["date"][0]
+    error_info["to_date"] = access_df["date"][len(access_df.index) - 1]
+
+    error_info["average_response_time"] = access_df["resp_time"].mean()
+    error_info["highest_response_time"] = access_df["resp_time"].max()
+
+    error_info["ip_highest_resp_time_origin"] = translateIps([(sqldf("SELECT address FROM access_df WHERE resp_time=" + str(error_info["highest_response_time"])).iloc[0, 0])])[["country", "city", "asname", "proxy"]].to_html()
+
+    return error_info
 

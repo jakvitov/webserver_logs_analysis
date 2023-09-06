@@ -16,8 +16,8 @@ def createErrorDf(log_directory):
     return error_df
 
 # Fill in the basic info about errors log file into template email
-def getBasicErrorsDataAndFillTemplate(error_info):
-    error_df = createErrorDf()
+def getBasicErrorsDataAndFillTemplate(error_info, log_directory):
+    error_df = createErrorDf(log_directory)
     errors_by_date = sqldf("SELECT date, count()  FROM error_df GROUP BY date")
     log_level_groupped = sqldf("SELECT log_level, count() FROM error_df GROUP BY log_level")
     open_file_errors = len(sqldf("SELECT * FROM error_df WHERE message like '%open()%'").index)
