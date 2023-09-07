@@ -19,6 +19,7 @@ def getAccessDataDf(log_directory):
     return pd.DataFrame(data)
 
 def createAccessCountriesPlot(translated_ips, title):
+    plt.clf()
     country_counts = translated_ips['country'].value_counts()
     # Create a bar plot
     country_counts.plot(kind='bar')
@@ -27,6 +28,18 @@ def createAccessCountriesPlot(translated_ips, title):
     plt.ylabel('Count of visits')
     plt.xticks(rotation=90)
     plt.tight_layout()
+    return plt
+
+def createAccessDistributionGraph(access_df):
+    plt.clf()
+    interval_counts = access_df.groupby(pd.Grouper(key='time_h', freq='5H')).size()
+
+    plt.plot(interval_counts.index, interval_counts.values, marker='o', linestyle='-')
+    plt.title("Time distribution of requests")
+    plt.xlabel('Time [5 hour intervals]')
+    plt.ylabel('Number of requests')
+    plt.grid(True)
+    plt.xticks(rotation=45)
     return plt
 
 def fillInfoFromAccessLog(error_info, log_directory):
@@ -57,8 +70,12 @@ def fillInfoFromAccessLog(error_info, log_directory):
 
     access_by_country_graph = createAccessCountriesPlot(ips_translated, "Request to website server per country")
     access_by_country_graph.savefig("access_by_country.png")
+
     errors_by_country_graph = createAccessCountriesPlot(error_ips_countries, "Error requests to website server per country")
-    errors_by_country_graph.savefig("errors_by_country")
+    errors_by_country_graph.savefig("errors_by_country.png")
+
+    access_over_time_distribution = createAccessDistributionGraph(access_df)
+    access_over_time_distribution.savefig("requests_distribution.png")
 
     error_info["requests_count"] = str(requests_total)
     error_info["errors_count"] = str(non_ok_requests)

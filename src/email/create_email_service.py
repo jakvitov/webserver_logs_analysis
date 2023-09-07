@@ -49,14 +49,15 @@ msg.attach(MIMEText(email_body, 'html'))
 
 access_by_country_graph_path = "./access_by_country.png"
 errors_by_country_graph_path = "./errors_by_country.png"
+request_distribution_graph_part = "./requests_distribution.png"
 addImage("<countries_access_hist>", msg, access_by_country_graph_path)
 addImage("<error_access_hist>", msg, errors_by_country_graph_path)
+addImage("<requests_distribution>", msg, request_distribution_graph_part)
 
 try:
     server = smtplib.SMTP_SSL(smtp_server, port)
     server.login(sender_email, password)
 
-    # Send the email
     server.sendmail(sender_email, receiver_emails, msg.as_string())
     print("Analysis sent OK")
 except Exception as e:
@@ -67,3 +68,4 @@ finally:
 # The files are automatically generated each time we run this script, so we clean them up afterwards
 os.remove(access_by_country_graph_path)
 os.remove(errors_by_country_graph_path)
+os.remove(request_distribution_graph_part)
