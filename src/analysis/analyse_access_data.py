@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from pandasql import sqldf
 import json
 
-from src.ip_services.ip_translator import translateIps
+from ip_services.ip_translator import translateIps
 
 # Script for access data analysis. We open the access log, compute data from it and return data objects
 # ready to be filled into email template

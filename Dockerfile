@@ -1,8 +1,10 @@
-FROM python:3.8
+FROM python:3
 
-COPY ./src src
-COPY ./resources /resources
+WORKDIR /app
+
+COPY ./src ./src
 COPY ./requirements.txt ./
-COPY ./start_analysis ./
+COPY ./resources ./resources
+
 
 RUN pip install -r requirements.txt

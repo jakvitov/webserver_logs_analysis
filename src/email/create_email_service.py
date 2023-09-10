@@ -4,14 +4,15 @@ from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from string import Template
+from analysis.analyse_access_data import fillInfoFromAccessLog
+
+from analysis.analyse_errors import getBasicErrorsDataAndFillTemplate
+from files.log_file_manager import moveLogFiles
 
 # Setup the email template -> read from file
-from src.analysis.analyse_access_data import fillInfoFromAccessLog
-from src.analysis.analyse_errors import getBasicErrorsDataAndFillTemplate
 
 
 # Service script, that fills template with info and creates and sends email with the statistics
-from src.files.log_file_manager import moveLogFiles
 
 
 def addImage(header_cid, msg, image_path):
@@ -26,9 +27,9 @@ def createAndSendEmail(input_logs, output_logs):
     port = 465
     sender_email = os.environ["EMAIL_NAME"]
     password = os.environ["MAIL_BOT_PASSWORD"]
-    receiver_emails = open("../../resources/target_emails").readlines()
+    receiver_emails = open("/app/resources/target_emails").readlines()
 
-    email_template_file = open("../../resources/analyse_email_template.html")
+    email_template_file = open("/app/resources/analyse_email_template.html")
     email_template = Template(email_template_file.read())
     email_template_file.close()
 
