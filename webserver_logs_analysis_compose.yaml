@@ -1,0 +1,11 @@
+services:
+  webserver_logs_analysis:
+    image: webserver-logs-analysis:latest
+    env_file:
+      - ./env
+    volumes:
+      - nginx_logs_directory:/app/input_logs
+      - output_directory:/app/output_logs
+    command: ["python3", "/app/src/analyse_logs.py", "/app/input_logs", "/app/output_logs"]
+    network_mode: "host"
+
